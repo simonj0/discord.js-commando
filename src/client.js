@@ -16,6 +16,9 @@ class CommandoClient extends discord.Client {
 	 * @property {number} [commandEditableDuration=30] - Time in seconds that command messages should be editable
 	 * @property {boolean} [nonCommandEditable=true] - Whether messages without commands can be edited to a command
 	 * @property {boolean} [unknownCommandResponse=true] - Whether the bot should respond to an unknown command
+	 * @property {boolean} [sendHelpInDM=true] - Whether the bot should always reply to help commands by sending a DM
+	 * @property {boolean} [tagAuthorInReply=true] - Whether the bot should tag the message author in a reply
+	 * @property {boolean} [argumentPrompt=true] - Whether the bot should prompt for invalid/missing arguments
 	 * @property {string|string[]|Set<string>} [owner] - ID of the bot owner's Discord user, or multiple IDs
 	 * @property {string} [invite] - Invite URL to the bot's support server
 	 */
@@ -30,6 +33,9 @@ class CommandoClient extends discord.Client {
 		if(typeof options.commandEditableDuration === 'undefined') options.commandEditableDuration = 30;
 		if(typeof options.nonCommandEditable === 'undefined') options.nonCommandEditable = true;
 		if(typeof options.unknownCommandResponse === 'undefined') options.unknownCommandResponse = true;
+		if(typeof options.sendHelpInDM === 'undefined') options.sendHelpInDM = true;
+		if(typeof options.tagAuthorInReply === 'undefined') options.tagAuthorInReply = true;
+		if(typeof options.argumentPrompt === 'undefined') options.argumentPrompt = true;
 		super(options);
 
 		/**

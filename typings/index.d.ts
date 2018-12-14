@@ -14,6 +14,7 @@ declare module 'discord.js-commando' {
 
 		private static validateInfo(client: CommandoClient, info: ArgumentInfo);
 
+		public readonly client: CommandoClient;
 		public default: any;
 		public infinite: boolean;
 		public key: string;
@@ -116,7 +117,7 @@ declare module 'discord.js-commando' {
 	}
 
 	export class CommandFormatError extends FriendlyError {
-		public constructor(msg: CommandMessage);
+		public constructor(msg: CommandMessage, errorMessage: string);
 	}
 
 	export class CommandGroup {
@@ -382,7 +383,8 @@ declare module 'discord.js-commando' {
 
 	type ArgumentCollectorResult = {
 		values?: object;
-		cancelled?: 'user' | 'time' | 'promptLimit';
+		cancelled?: 'user' | 'time' | 'promptLimit' | 'promptDisabled';
+		cancelMessage?: string;
 		prompts: Message[];
 		answers: Message[];
 	};
@@ -403,7 +405,8 @@ declare module 'discord.js-commando' {
 
 	type ArgumentResult = {
 		value: any | any[];
-		cancelled?: 'user' | 'time' | 'promptLimit';
+		cancelled?: 'user' | 'time' | 'promptLimit' | 'promptDisabled';
+		cancelMessage?: string;
 		prompts: Message[];
 		answers: Message[];
 	};
@@ -439,6 +442,9 @@ declare module 'discord.js-commando' {
 		commandEditableDuration?: number;
 		nonCommandEditable?: boolean;
 		unknownCommandResponse?: boolean;
+		sendHelpInDM?: boolean;
+		tagAuthorInReply?: boolean;
+		argumentPrompt?: boolean;
 		owner?: string | string[] | Set<string>;
 		invite?: string;
 	};

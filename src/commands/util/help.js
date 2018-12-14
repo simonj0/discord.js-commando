@@ -28,7 +28,7 @@ module.exports = class HelpCommand extends Command {
 		});
 	}
 
-	async run(msg, args) { // eslint-disable-line complexity
+	run(msg, args) { // eslint-disable-line complexity
 		const groups = this.client.registry.groups;
 		const commands = this.client.registry.findCommands(args.command, false, msg);
 		const showAll = args.command && args.command.toLowerCase() === 'all';
@@ -51,14 +51,7 @@ module.exports = class HelpCommand extends Command {
 				if(commands[0].details) help += `\n**Details:** ${commands[0].details}`;
 				if(commands[0].examples) help += `\n**Examples:**\n${commands[0].examples.join('\n')}`;
 
-				const messages = [];
-				try {
-					messages.push(await msg.direct(help));
-					if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
-				} catch(err) {
-					messages.push(await msg.reply('Unable to send you the help DM. You probably have DMs disabled.'));
-				}
-				return messages;
+				return this.sendHelpMessage(help, msg);
 			} else if(commands.length > 15) {
 				return msg.reply('Multiple commands found. Please be more specific.');
 			} else if(commands.length > 1) {
@@ -71,35 +64,44 @@ module.exports = class HelpCommand extends Command {
 				);
 			}
 		} else {
-			const messages = [];
-			try {
-				messages.push(await msg.direct(stripIndents`
-					${oneLine`
-						To run a command in ${msg.guild ? msg.guild.name : 'any server'},
-						use ${Command.usage('command', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
-						For example, ${Command.usage('prefix', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
-					`}
-					To run a command in this DM, simply use ${Command.usage('command', null, null)} with no prefix.
+			const help = stripIndents`
+				${oneLine`
+					To run a command in ${msg.guild ? msg.guild.name : 'any server'},
+					use ${Command.usage('command', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
+					For example, ${Command.usage('prefix', msg.guild ? msg.guild.commandPrefix : null, this.client.user)}.
+				`}
+				To run a command in this DM, simply use ${Command.usage('command', null, null)} with no prefix.
 
-					Use ${this.usage('<command>', null, null)} to view detailed information about a specific command.
-					Use ${this.usage('all', null, null)} to view a list of *all* commands, not just available ones.
+				Use ${this.usage('<command>', null, null)} to view detailed information about a specific command.
+				Use ${this.usage('all', null, null)} to view a list of *all* commands, not just available ones.
 
-					__**${showAll ? 'All commands' : `Available commands in ${msg.guild || 'this DM'}`}**__
+				__**${showAll ? 'All commands' : `Available commands in ${msg.guild || 'this DM'}`}**__
 
-					${(showAll ? groups : groups.filter(grp => grp.commands.some(cmd => cmd.isUsable(msg))))
-						.map(grp => stripIndents`
-							__${grp.name}__
-							${(showAll ? grp.commands : grp.commands.filter(cmd => cmd.isUsable(msg)))
-								.map(cmd => `**${cmd.name}:** ${cmd.description}${cmd.nsfw ? ' (NSFW)' : ''}`).join('\n')
-							}
-						`).join('\n\n')
-					}
-				`, { split: true }));
-				if(msg.channel.type !== 'dm') messages.push(await msg.reply('Sent you a DM with information.'));
-			} catch(err) {
-				messages.push(await msg.reply('Unable to send you the help DM. You probably have DMs disabled.'));
-			}
-			return messages;
+				${(showAll ? groups : groups.filter(grp => grp.commands.some(cmd => cmd.isUsable(msg))))
+					.map(grp => stripIndents`
+						__${grp.name}__
+						${(showAll ? grp.commands : grp.commands.filter(cmd => cmd.isUsable(msg)))
+							.map(cmd => `**${cmd.name}:** ${cmd.description}${cmd.nsfw ? ' (NSFW)' : ''}`).join('\n')
+						}
+					`).join('\n\n')
+				}
+			`;
+			return this.sendHelpMessage(help, msg);
 		}
+	}
+
+	async sendHelpMessage(text, origMsg) {
+		const messages = [];
+		if(this.client.options.sendHelpInDM) {
+			try {
+				messages.push(await origMsg.direct(text, { split: true }));
+				if(origMsg.channel.type !== 'dm') messages.push(await origMsg.reply('Sent you a DM with information.'));
+			} catch(err) {
+				messages.push(await origMsg.reply('Unable to send you the help DM. You probably have DMs disabled.'));
+			}
+		} else {
+			messages.push(await origMsg.reply(text, { split: true }));
+		}
+		return messages;
 	}
 };

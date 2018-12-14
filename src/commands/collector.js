@@ -51,6 +51,8 @@ class ArgumentCollector {
 	 * - `user` (user cancelled)
 	 * - `time` (wait time exceeded)
 	 * - `promptLimit` (prompt limit exceeded)
+	 * - `promptDisabled` (prompts disabled)
+	 * @property {?string} cancelMessage - Detailed reason for cancellation
 	 * @property {Message[]} prompts - All messages that were sent to prompt the user
 	 * @property {Message[]} answers - All of the user's messages that answered a prompt
 	 */
@@ -79,6 +81,7 @@ class ArgumentCollector {
 					return {
 						values: null,
 						cancelled: result.cancelled,
+						cancelMessage: result.cancelMessage,
 						prompts: [].concat(...results.map(res => res.prompts)),
 						answers: [].concat(...results.map(res => res.answers))
 					};

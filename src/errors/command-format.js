@@ -7,10 +7,11 @@ const FriendlyError = require('./friendly');
 class CommandFormatError extends FriendlyError {
 	/**
 	 * @param {CommandMessage} msg - The command message the error is for
+	 * @param {?string} errorMessage - Optional error message
 	 */
-	constructor(msg) {
+	constructor(msg, errorMessage = 'Invalid command usage') {
 		super(
-			`Invalid command usage. The \`${msg.command.name}\` command's accepted format is: ${msg.usage(
+			`${errorMessage}. The \`${msg.command.name}\` command's accepted format is: ${msg.usage(
 				msg.command.format,
 				msg.guild ? undefined : null,
 				msg.guild ? undefined : null

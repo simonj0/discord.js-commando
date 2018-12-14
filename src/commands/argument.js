@@ -39,6 +39,14 @@ class Argument {
 		this.constructor.validateInfo(client, info);
 
 		/**
+		 * Client this argument is for
+		 * @name Argument#client
+		 * @type {CommandoClient}
+		 * @readonly
+		 */
+		Object.defineProperty(this, 'client', { value: client });
+
+		/**
 		 * Key for the argument
 		 * @type {string}
 		 */
@@ -138,6 +146,8 @@ class Argument {
 	 * - `user` (user cancelled)
 	 * - `time` (wait time exceeded)
 	 * - `promptLimit` (prompt limit exceeded)
+	 * - `promptDisabled` (prompts disabled)
+	 * @property {?string} cancelMessage - Detailed reason for cancellation
 	 * @property {Message[]} prompts - All messages that were sent to prompt the user
 	 * @property {Message[]} answers - All of the user's messages that answered a prompt
 	 */
@@ -149,7 +159,7 @@ class Argument {
 	 * @param {number} [promptLimit=Infinity] - Maximum number of times to prompt for the argument
 	 * @return {Promise<ArgumentResult>}
 	 */
-	async obtain(msg, value, promptLimit = Infinity) {
+	async obtain(msg, value, promptLimit = Infinity) { // eslint-disable-line complexity
 		let empty = this.isEmpty(value, msg);
 		if(empty && this.default !== null) {
 			return {
@@ -165,6 +175,22 @@ class Argument {
 		const prompts = [];
 		const answers = [];
 		let valid = !empty ? await this.validate(value, msg) : false;
+
+		if(!this.client.options.argumentPrompt && (!valid || typeof valid === 'string')) {
+			let cancelMessage;
+			if(!empty) {
+				cancelMessage = stripIndents`
+					${valid ? valid : `You provided an invalid ${this.label}. Please try again`}
+				`;
+			}
+			return {
+				value: null,
+				cancelled: 'promptDisabled',
+				cancelMessage: cancelMessage,
+				prompts,
+				answers
+			};
+		}
 
 		while(!valid || typeof valid === 'string') {
 			/* eslint-disable no-await-in-loop */

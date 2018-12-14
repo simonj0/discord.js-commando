@@ -183,7 +183,7 @@ class CommandMessage {
 			const result = await this.command.argsCollector.obtain(this, provided);
 			if(result.cancelled) {
 				if(result.prompts.length === 0) {
-					const err = new CommandFormatError(this);
+					const err = new CommandFormatError(this, result.cancelMessage);
 					return this.reply(err.message);
 				}
 				return this.reply('Cancelled command.');
@@ -255,12 +255,13 @@ class CommandMessage {
 	 * @return {Message|Message[]}
 	 * @private
 	 */
-	respond({ type = 'reply', content, options, lang, fromEdit = false }) {
+	respond({ type = 'reply', content, options, lang, fromEdit = false }) { // eslint-disable-line complexity
 		const shouldEdit = this.responses && !fromEdit;
 		if(shouldEdit) {
 			if(options && options.split && typeof options.split !== 'object') options.split = {};
 		}
 
+		if(type === 'reply' && !this.client.options.tagAuthorInReply) type = 'plain';
 		if(type === 'reply' && this.message.channel.type === 'dm') type = 'plain';
 		if(type !== 'direct') {
 			if(this.message.guild && !this.message.channel.permissionsFor(this.client.user).has('SEND_MESSAGES')) {
